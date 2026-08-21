@@ -37,18 +37,22 @@ Two new files hold the app:
 
 - **`analysis.py`** — the same calculations as `unifiedmentorproject.py`, rewritten as
   reusable functions that take a DataFrame in and return result tables out (instead of
-  reading/writing files on disk). This is the "engine."
-- **`app.py`** — the Streamlit "front end." It shows a file upload box in the browser,
-  calls the engine in `analysis.py`, and displays the results as tables, charts, and
-  download buttons.
+  reading/writing files on disk). This is the "engine." It also defines `INPUT_FILE`,
+  the exact filename the app looks for: `Nassau Candy Distributor.csv`.
+- **`app.py`** — the Streamlit "front end." On every load it reads `INPUT_FILE`
+  straight from the project folder — there is **no upload box** — and calls the engine
+  in `analysis.py` to display the results as tables, charts, and download buttons.
 
 ### App flow
 
 ```
-Browser: upload Nassau Candy Distributor.csv
+Project folder: Nassau Candy Distributor.csv   (must already be sitting here)
         │
         ▼
-app.py: analysis.load_and_validate()   ──►  checks required columns exist
+app.py: checks the file exists   ──►  shows st.error and stops if it's missing
+        │
+        ▼
+analysis.load_and_validate()   ──►  checks required columns exist
         │
         ▼
 analysis.run_analysis(df)
@@ -67,23 +71,24 @@ app.py: renders each table + a chart, with a "Download CSV" button
 
 Nothing is written to disk on the server — every result table gets a download button
 so you can save the CSVs yourself, matching the files the original script used to write
-(`route_state_summary.csv`, `kpi_summary.csv`, etc.).
+(`route_state_summary.csv`, `kpi_summary.csv`, etc.). The app re-reads the file
+automatically if it changes on disk (it caches on the file's last-modified time).
 
 ## 4. Running the app on your own computer
 
-1. Install the dependencies (one-time, from the project folder):
+1. Make sure `Nassau Candy Distributor.csv` is in the project folder, next to `app.py`.
+2. Install the dependencies (one-time, from the project folder):
    ```bash
    pip install -r requirements.txt
    ```
-2. Start the app:
+3. Start the app:
    ```bash
    streamlit run app.py
    ```
-3. Your browser opens automatically at `http://localhost:8501`. Upload
-   `Nassau Candy Distributor.csv` and the tables/charts appear.
-
-You do **not** need the CSV sitting in the folder anymore — you upload it through the
-browser each time.
+4. Your browser opens automatically at `http://localhost:8501` and the tables/charts
+   appear immediately — there's nothing to upload. To analyze a different file, replace
+   `Nassau Candy Distributor.csv` in the project folder with the new data (same name)
+   and reload the page.
 
 ## 5. Deploying it online (Streamlit Community Cloud — free)
 
@@ -94,8 +99,10 @@ browser each time.
 4. Click "Deploy." Streamlit Cloud reads `requirements.txt` automatically and installs
    `streamlit`, `pandas`, and `numpy` for you.
 5. After a minute or two you'll get a public URL (like
-   `https://your-app-name.streamlit.app`) you can share with anyone — they upload their
-   own CSV and see the results, no installation needed on their end.
+   `https://your-app-name.streamlit.app`) you can share with anyone. Since the app
+   reads `Nassau Candy Distributor.csv` from the repo itself (no upload box), make sure
+   that file is committed to the GitHub repo before deploying, or the app will show an
+   error saying it can't find it.
 
 ## 6. Where to change behavior later
 

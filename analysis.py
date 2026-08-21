@@ -12,6 +12,8 @@ import numpy as np
 # ==============================
 # CONFIGURATION
 # ==============================
+INPUT_FILE = "Nassau Candy Distributor.csv"
+
 DELAY_THRESHOLD_DAYS = 5
 
 # Dataset columns

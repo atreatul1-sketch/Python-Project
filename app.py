@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 """Streamlit app for the Nassau Candy Distributor shipment logistics analysis.
 
-Upload the raw CSV in the browser and get back the same route / geography /
-ship-mode summaries and KPIs that unifiedmentorproject.py produces, plus
-charts and CSV downloads. See analysis.py for the underlying computations
-and doc/explanation.md for a plain-language walkthrough.
+Always reads analysis.INPUT_FILE ("Nassau Candy Distributor.csv") from the
+project directory and shows the same route / geography / ship-mode summaries
+and KPIs that unifiedmentorproject.py produces, plus charts and CSV
+downloads. See analysis.py for the underlying computations and
+doc/explanation.md for a plain-language walkthrough.
 """
 
+import os
+
 import streamlit as st
-import pandas as pd
 
 import analysis
 
@@ -16,28 +18,26 @@ st.set_page_config(page_title="Candy Distributor Shipment Analysis", layout="wid
 
 st.title("Candy Distributor Shipment Logistics Analysis")
 st.write(
-    "Upload the **Nassau Candy Distributor.csv** file to get shipping "
-    "lead-time, route efficiency, geography, and ship-mode performance "
-    "summaries — the same results as the original analysis script, "
-    "in your browser."
+    f"Shipping lead-time, route efficiency, geography, and ship-mode "
+    f"performance summaries for `{analysis.INPUT_FILE}`."
 )
 
-uploaded_file = st.file_uploader("Upload Nassau Candy Distributor.csv", type="csv")
-
-if uploaded_file is None:
-    st.info("Waiting for a CSV upload to run the analysis.")
+if not os.path.exists(analysis.INPUT_FILE):
+    st.error(
+        f"Could not find `{analysis.INPUT_FILE}` in the project folder. "
+        "Place the file there and reload the app."
+    )
     st.stop()
 
 
 @st.cache_data(show_spinner="Running analysis...")
-def run_pipeline(file_bytes):
-    import io
-    raw_df = analysis.load_and_validate(io.BytesIO(file_bytes))
+def run_pipeline(path, mtime):
+    raw_df = analysis.load_and_validate(path)
     return analysis.run_analysis(raw_df)
 
 
 try:
-    results = run_pipeline(uploaded_file.getvalue())
+    results = run_pipeline(analysis.INPUT_FILE, os.path.getmtime(analysis.INPUT_FILE))
 except ValueError as e:
     st.error(str(e))
     st.stop()
