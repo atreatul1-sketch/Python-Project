@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+*_summary.csv
+cleaned_shipments.csv
+top_10_routes.csv
+bottom_10_routes.csv
+bottleneck_routes.csv
+Nassau Candy Distributor.csv
+.vscode
